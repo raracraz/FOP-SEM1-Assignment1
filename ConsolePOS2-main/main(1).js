@@ -1,6 +1,6 @@
 const { menuitems } = require("./offerings");
 const currentTime = require("./timestampFnc.js");
-const shoppingCart = require("./shoppingCart.js");
+const shoppingCart = require("./shoppingCartFncs.js");
 const readline = require("readline");
 const uuid = require("uuid");
 trxid = uuid.v4();
