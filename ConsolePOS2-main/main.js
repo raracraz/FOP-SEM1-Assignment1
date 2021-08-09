@@ -80,7 +80,6 @@ function Main() {
                                     }/${menuitems[category].items[item].options[parseInt(answer)].name}`;
                                     price = orderPrice;
                                     //write order into sqlite database
-                                    console.log(details)
                                     shoppingCart.add(trxid, details, Qty, price, currentTime.convert(currentTime.get()));
                                     rl.question('Is that all (y/n)? \n>>>> ', (answer) => {
                                         if (answer == 'y') {
@@ -117,40 +116,6 @@ function Main() {
                 MenuSelection()
                 break
             case (2):
-                function OrderCartOptions() {
-                    count = 0
-                    shoppingCart.get((data) => {
-                        data.forEach(element => {
-                            console.log('====================================================================================================')
-                            console.log(`${count} - ${element.Details} / Qty: ${element.Qty} / SGD ${element.price}`)
-                            grandTotal += parseFloat(element.price)
-                            console.log('====================================================================================================')
-                            console.log(`GRAND Total : $${grandTotal.toFixed(2)}\n`)
-                            count += 1
-                        });
-                        rl.question(`Enter Cart options.\n1. Send to kitchen\n2. Remove Item\n0. Back to menu`, (cartOption) => {
-                            switch (cartOption) {
-                                case (1):
-                                    console.log(`Order sent to the kitchen!`)
-                                    rl.close()
-                                    break
-                                case (2):
-                                    rl.question(`Remove item. \nEnter order number.\n>>>>`, (count) => {
-                                        cartOption.del(count);
-                                        OrderCartOptions()
-
-                                    })
-                                    break
-                                case (0):
-                                    Main()
-                                    break
-                            }
-                        })
-                    })
-                }
-                OrderCartOptions()
-                break
-            case (3):
                 function getReceipt(TransactionIDArr) {
                     TransactionIDArr = []
                     count = 0

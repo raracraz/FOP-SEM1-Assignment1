@@ -1,6 +1,17 @@
 WEBSITES USED FOR REFERENCE:
+Sqlite3:
 https://www.sqlitetutorial.net/sqlite-nodejs/query/
 https://www.autoitscript.com/forum/topic/150060-sqlite-the-last-id-how-get/
 https://www.sqlitetutorial.net/sqlite-nodejs/delete/
 https://www.geeksforgeeks.org/javascript-string-prototype-split-function/
 https://discuss.codecademy.com/t/why-use-db-each-instead-db-all-or-db-get-in-node-sqlite/381382
+
+callback function:
+https://www.javascripttutorial.net/javascript-callback/
+https://www.w3schools.com/js/js_callback.asp
+https://www.programiz.com/javascript/callback
+
+JSON string:
+https://www.w3schools.com/js/js_json_intro.asp
+https://www.tutorialspoint.com/json/json_objects.htm
+https://www.youtube.com/watch?v=GpOO5iKzOmY
