@@ -13,7 +13,7 @@ const rl = readline.createInterface({
 });
 
 function Main() {
-    rl.question(`1. View Menu\n2. View Cart\n0. Quit\nWelcome to NiceMeal Restaurant! \n>>>> `, (optionFirst) => {
+    rl.question(`1. View Menu\n2. View Cart\n3. View Receipts\n0. Quit\nWelcome to NiceMeal Restaurant! \n>>>> `, (optionFirst) => {
         switch (parseInt(optionFirst)) {
             case (1):
                 function MenuSelection() {
@@ -37,7 +37,7 @@ function Main() {
                 function ItemSelection(category) {
 
                     for (j = 0; j < menuitems[parseInt(category)].items.length; j++) {
-                        console.log(`${tab}${tab}${j} - ${menuitems[parseInt(category)].items[j].name}`);
+                        console.log(`${tab}${tab}${j +1} - ${menuitems[parseInt(category)].items[j].name}`);
                     }
                     rl.question(`${tab}${tab}Which ${menuitems[category].name} would you like to order ? \n>>>> `, (item) => {
 
@@ -55,7 +55,7 @@ function Main() {
 
                     for (k = 0; k < menuitems[category].items[item].options.length; k++) {
                         console.log(
-                            `${tab}${tab}${k} - ${menuitems[category].items[item].options[k].name}`
+                            `${tab}${tab}${k +1} - ${menuitems[category].items[item].options[k].name}`
                         );
                     }
 
@@ -77,7 +77,7 @@ function Main() {
 
                                     details = `${menuitems[parseInt(category)].name}/${
                                         menuitems[parseInt(category)].items[parseInt(item)].name
-                                    }/${menuitems[category].items[item].options[parseInt(realAnswer)].name}`;
+                                    }/${menuitems[category].items[item].options[parseInt(answer)].name}`;
                                     price = orderPrice;
                                     //write order into sqlite database
                                     console.log(details)
@@ -117,33 +117,73 @@ function Main() {
                 MenuSelection()
                 break
             case (2):
-                TransactionIDArr = []
-                count = 0
-                shoppingCart.getTrxID((data) => {
-                    data.forEach(element => {
-                        // IndexArr = []
-                        TransactionIDArr.push(element.TransactionID)
-                            //  IndexArr.push(element.ID)
-                        console.log(`[${count}] - ${element.TransactionID} - ${currentTime.convert(element.OrderTime)}`)
-                        count += 1
+                function OrderCartOptions() {
+                    count = 0
+                    shoppingCart.get((data) => {
+                        data.forEach(element => {
+                            console.log('====================================================================================================')
+                            console.log(`${count} - ${element.Details} / Qty: ${element.Qty} / SGD ${element.price}`)
+                            grandTotal += parseFloat(element.price)
+                            console.log('====================================================================================================')
+                            console.log(`GRAND Total : $${grandTotal.toFixed(2)}\n`)
+                            count += 1
+                        });
+                        rl.question(`Enter Cart options.\n1. Send to kitchen\n2. Remove Item\n0. Back to menu`, (cartOption) => {
+                            switch (cartOption) {
+                                case (1):
+                                    console.log(`Order sent to the kitchen!`)
+                                    rl.close()
+                                    break
+                                case (2):
+                                    rl.question(`Remove item. \nEnter order number.\n>>>>`, (count) => {
+                                        cartOption.del(count);
+                                        OrderCartOptions()
 
-                    });
-                    console.log(TransactionIDArr.length)
-                    rl.question('Which Receipt you want to view ? \n(Your receipt should be the lastest entry) \n>>>> ', (answer) => {
-                        shoppingCart.get(TransactionIDArr[answer], (detailsData) => {
-                            console.log(detailsData)
+                                    })
+                                    break
+                                case (0):
+                                    Main()
+                                    break
+                            }
                         })
-                        rl.close()
                     })
-                });
+                }
+                OrderCartOptions()
+                break
+            case (3):
+                function getReceipt(TransactionIDArr) {
+                    TransactionIDArr = []
+                    count = 0
+                    shoppingCart.getTrxID((data) => {
+                        data.forEach(element => {
+                            // IndexArr = []
+                            TransactionIDArr.push(element.TransactionID)
+                                //  IndexArr.push(element.ID)
+                            console.log(`[${count}] - ${element.TransactionID} - ${currentTime.convert(element.OrderTime)}`)
+                            count += 1
 
+                        });
+                        rl.question('Which Receipt you want to view ? \n(Your receipt should be the lastest entry) (Enter -1 to quit) \n>>>> ', (answer) => {
+                            if (answer <= TransactionIDArr.length && !isNaN(answer)) {
+                                shoppingCart.get(TransactionIDArr[answer], (detailsData) => {
+                                    console.log(detailsData)
+                                })
+                                rl.close()
+                            } else {
+                                console.log(`Please enter a number from 0 - ${TransactionIDArr.length-1}.`)
+                                getReceipt()
+                            }
+                        })
+                    });
+                }
+                getReceipt()
                 break
             case (0):
                 console.log(`Goodbye, Have a nice day...`)
                 rl.close()
                 break
             default:
-                console.log(`Please enter only [0 - 2]`)
+                console.log(`Please enter only [0 - 3]`)
                 Main()
         }
 
