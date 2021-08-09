@@ -36,6 +36,7 @@ const db = new sqlite3.Database("./ConsolePOS2-main/consolepos.db");
 const queries = [];
 
 function get(id, callback) {
+    queries.length = 0
     db.each("SELECT * FROM Orders WHERE TransactionID = ?", [id],
         (err, row) => {
             if (err) {
@@ -92,6 +93,7 @@ function del(id) {
 }
 
 function getTrxID(callback) {
+    queries.length = 0
     db.each("SELECT ID, TransactionID, OrderTime FROM Orders GROUP BY TransactionID ORDER BY OrderTime",
         (err, row) => {
             if (err) {

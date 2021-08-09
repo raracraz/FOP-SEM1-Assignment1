@@ -61,7 +61,7 @@ function Main() {
 
                     rl.question(`${tab}${tab}What is your selection? \n>>>> `, (answer) => {
                         realAnswer = parseInt(answer) - 1
-                        rl.question(`Enter Order Qty: \n>>>>`, (Qty) => {
+                        rl.question(`Enter Order Qty: \n>>>> `, (Qty) => {
                             if (parseInt(Qty) > 1000 || isNaN(Qty)) {
                                 console.log(`Sorry, your order was invalid, please try again.`)
                                 OptionSelection(category, item)
@@ -74,27 +74,31 @@ function Main() {
                                     //pushes the order into a array to show at the end
                                     currentOrder.push(`Qty:${Qty}, ${menuitems[parseInt(category)].name}, ${menuitems[parseInt(category)].items[parseInt(item)].name}, ${menuitems[category].items[item].options[parseInt(answer)].name}, Price: SGD , ${parseInt(orderPrice*Qty).toFixed(2)}`);
 
-                                    details = `${menuitems[parseInt(category)].name}/${menuitems[parseInt(realAnswer)].items[parseInt(item)].name}/${menuitems[category].items[item].options[parseInt(realAnswer)].name}`;
+
+                                    details = `${menuitems[parseInt(category)].name}/${
+                                        menuitems[parseInt(category)].items[parseInt(item)].name
+                                    }/${menuitems[category].items[item].options[parseInt(realAnswer)].name}`;
                                     price = orderPrice;
                                     //write order into sqlite database
-                                    shoppingCart.add(trxid, details, Qty, price, currentTime.get());
+                                    console.log(details)
+                                    shoppingCart.add(trxid, details, Qty, price, currentTime.convert(currentTime.get()));
                                     rl.question('Is that all (y/n)? \n>>>> ', (answer) => {
                                         if (answer == 'y') {
                                             console.log('')
                                             console.log('Your orders are')
-                                            console.log('=====================================================================================')
+                                            console.log('====================================================================================================')
                                             grandTotal = 0
                                             for (allOrders = 0; allOrders < currentOrder.length; allOrders++) {
                                                 orderDetails = currentOrder[allOrders].split(",");
                                                 grandTotal += parseFloat(orderDetails[5])
                                                 console.log(`${allOrders +1} - ${orderDetails[0]} /${orderDetails[1]} /${orderDetails[2]} /${orderDetails[3]} .......... (${orderDetails[4]}$${orderDetails[5]})`);
                                             }
-                                            console.log('=====================================================================================')
+                                            console.log('====================================================================================================')
                                             console.log(`GRAND Total : $${grandTotal.toFixed(2)}\n`)
 
                                             // rl.question(`Which receipt do you want to see`)
 
-                                            rl.close();
+                                            Main()
                                         } else {
                                             console.log('Ok, Redirecting you to the menu!')
                                             MenuSelection()
@@ -105,18 +109,6 @@ function Main() {
                                     console.log('\nInvalid Input, Please try again.' + '\n>>>> ')
                                     OptionSelection(category, item)
                                 }
-                                /*const db = new sqlite3.Database('./ConsolePOS2-main/consolepos.db');
-                        // construct the insert statement with multiple placeholders
-                        // based on the number of rows
-                        db.serialize(() => {
-        
-                            db.run("INSERT INTO Orders (Name) VALUES " + menuitems[parseInt(category)].name);
-                            db.run("INSERT INTO Orders (Options) VALUES" + menuitems[parseInt(category)].items[parseInt(item)].name + menuitems[category].items[item].options[parseInt(answer)].name);
-                            db.run("INSERT INTO Orders (Price) VALUES" + 'Price: SGD' + orderPrice);
-                        });
-        
-                        // close the database connection
-                        db.close();*/
                             }
                         })
                     })
@@ -125,22 +117,26 @@ function Main() {
                 MenuSelection()
                 break
             case (2):
+                TransactionIDArr = []
+                count = 0
                 shoppingCart.getTrxID((data) => {
                     data.forEach(element => {
-                        TransactionIDArr = []
-                        IndexArr = []
+                        // IndexArr = []
                         TransactionIDArr.push(element.TransactionID)
-                        IndexArr.push(element.ID)
-                        shoppingCart.get(TransactionIDArr, (id) => {
-                            console.log(id.Details);
-                        });
+                            //  IndexArr.push(element.ID)
+                        console.log(`[${count}] - ${element.TransactionID} - ${currentTime.convert(element.OrderTime)}`)
+                        count += 1
+
                     });
+                    console.log(TransactionIDArr.length)
+                    rl.question('Which Receipt you want to view ? \n(Your receipt should be the lastest entry) \n>>>> ', (answer) => {
+                        shoppingCart.get(TransactionIDArr[answer], (detailsData) => {
+                            console.log(detailsData)
+                        })
+                        rl.close()
+                    })
                 });
 
-
-
-
-                rl.close()
                 break
             case (0):
                 console.log(`Goodbye, Have a nice day...`)
