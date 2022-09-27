@@ -32,7 +32,7 @@ function get(id) {
     db.each("SELECT * ")
 }*/
 const sqlite3 = require("sqlite3");
-const db = new sqlite3.Database("./ConsolePOS2-main/consolepos.db");
+const db = new sqlite3.Database("./consolepos.db");
 const queries = [];
 
 function get(TransactionID, callback) {

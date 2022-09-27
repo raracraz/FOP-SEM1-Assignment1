@@ -5,7 +5,7 @@ const currentTime = require("./timestampFnc.js");
 const shoppingCart = require("./shoppingCartFncs.js");
 const tab = ('\t')
 const sqlite3 = require("sqlite3");
-const db = new sqlite3.Database("./ConsolePOS2-main/consolepos.db");
+const db = new sqlite3.Database("./consolepos.db");
 var currentOrder = []
 const uuid = require("uuid");
 trxid = uuid.v4();
@@ -19,7 +19,6 @@ function Main() {
         switch (parseInt(optionFirst)) {
             case (1):
                 function MenuSelection() {
-
                     for (i = 0; i < menuitems.length; i++) {
                         console.log(`${tab}${i+1} - ${menuitems[i].name}`);
                     }
@@ -54,15 +53,19 @@ function Main() {
                 }
 
                 function OptionSelection(category, item) {
-
+                    var NumOfOptions = 0
                     for (k = 0; k < menuitems[category].items[item].options.length; k++) {
                         console.log(
                             `${tab}${tab}${k +1} - ${menuitems[category].items[item].options[k].name}`
                         );
+                        NumOfOptions = menuitems[category].items[item].options.length
                     }
-
                     rl.question(`${tab}${tab}What is your selection? \n>>>> `, (answer) => {
                         realAnswer = parseInt(answer) - 1
+                        if (parseInt(answer) > NumOfOptions) {
+                            console.log(`Sorry, your order was invalid, please try again.`)
+                            OptionSelection(category, item)
+                        }
                         rl.question(`Enter Order Qty: \n>>>> `, (Qty) => {
                             if (Qty > 1000 && isNaN(Qty)) {
                                 console.log(`Sorry, your order was invalid, please try again.`)
@@ -70,7 +73,7 @@ function Main() {
                             } else {
                                 if (parseInt(realAnswer) < menuitems[category].items[item].options.length) {
                                     orderPrice = orderPrice + menuitems[category].items[item].options[parseInt(realAnswer)].addprice;
-                                    console.log('You have ordered ', 'Qty:' +
+                                    console.log('You have ordered', 'Qty:' +
                                         Qty, menuitems[parseInt(category)].items[parseInt(item)].name, '/', menuitems[category].items[item].options[parseInt(realAnswer)].name, '/ Price: SGD ', parseInt(orderPrice * Qty).toFixed(2));
                                     //ask the user if the order is all they want or they want to add items into the order
                                     //pushes the order into a array to show at the end
@@ -104,22 +107,38 @@ function Main() {
                                                             console.log(`Redirecting you to the main menu`)
                                                             MenuSelection()
                                                         } else if (orderConfirm == `d` || orderConfirm == `D`) {
-                                                            trxid = []
-                                                            trxid.push(element.TransactionID, element.Details)
-                                                            rl.question(`Which item do you want to remove?`, (id) => {
-                                                                db.run(`DELETE FROM Orders WHERE TransactionID = (?)`, [id], (err) => {
-                                                                    if (err) {
-                                                                        console.log(`error deleting from db ${err}`);
-                                                                        Success = false;
+                                                            trxidArr = []
+                                                            console.log(trxid)
+                                                            console.log(details)
+                                                            // trxidArr.push(element.TransactionID, element.Details)
+                                                            shoppingCart.get(trxid).then((data) => {
+                                                                for (i = 0; i < data.length; i++) {
+                                                                    trxidArr.push(data[i].TransactionID, data[i].Details)
+                                                                }
+                                                                console.log(trxidArr)
+                                                                rl.question(`Enter the number of the order you want to delete\n>>>> `, (deleteOrder) => {
+                                                                    if (deleteOrder > data.length) {
+                                                                        console.log(`Invalid Input, Please try again.`)
+                                                                        confirmMenu()
                                                                     } else {
-                                                                        console.log(`Deleted [${id}]`);
-                                                                        Success = true;
+                                                                        shoppingCart.delete(trxidArr[deleteOrder * 2 - 2], trxidArr[deleteOrder * 2 - 1])
+                                                                        console.log(`Order ${deleteOrder} has been deleted`)
+                                                                        confirmMenu()
                                                                     }
-                                                                    return Success;
-                                                                });
-
-
+                                                                })
                                                             })
+                                                            // rl.question(`Which item do you want to remove?`, (id) => {
+                                                            //     db.run(`DELETE FROM Orders WHERE TransactionID = (?)`, [id], (err) => {
+                                                            //         if (err) {
+                                                            //             console.log(`error deleting from db ${err}`);
+                                                            //             Success = false;
+                                                            //         } else {
+                                                            //             console.log(`Deleted [${id}]`);
+                                                            //             Success = true;
+                                                            //         }
+                                                            //         return Success;
+                                                            //     });
+                                                            // })
                                                         } else if (orderConfirm == `c` || orderConfirm == `C`) {
                                                             console.log(`Thank you, Order has been received.`)
                                                             Main()
@@ -161,7 +180,6 @@ function Main() {
                                 //  IndexArr.push(element.ID)
                             console.log(`[${count}] - ${element.TransactionID} - ${currentTime.convert(element.OrderTime)}`)
                             count += 1
-
                         });
                         rl.question('Which Receipt you want to view ? \n(Your receipt should be the lastest entry) (Enter -1 to quit) \n>>>> ', (answer) => {
                             if (answer <= TransactionIDArr.length && !isNaN(answer)) {
